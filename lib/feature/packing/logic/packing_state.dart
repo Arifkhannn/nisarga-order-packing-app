@@ -5,12 +5,14 @@ class PackingState extends Equatable {
   final bool isSubmitting;
   final Set<String> packedItemIds; // 👈 important
   final String? error;
+  final bool packedSucess;
 
   const PackingState({
     required this.isLoading,
     required this.isSubmitting,
     required this.packedItemIds,
     this.error,
+    required this.packedSucess
   });
 
   factory PackingState.initial() {
@@ -18,6 +20,7 @@ class PackingState extends Equatable {
       isLoading: false,
       isSubmitting: false,
       packedItemIds: {},
+      packedSucess: false
     );
   }
 
@@ -26,20 +29,18 @@ class PackingState extends Equatable {
     bool? isSubmitting,
     Set<String>? packedItemIds,
     String? error,
+    bool? packedSucess
   }) {
     return PackingState(
       isLoading: isLoading ?? this.isLoading,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       packedItemIds: packedItemIds ?? this.packedItemIds,
       error: error,
+      packedSucess: packedSucess?? this.packedSucess
+
     );
   }
 
   @override
-  List<Object?> get props => [
-        isLoading,
-        isSubmitting,
-        packedItemIds,
-        error,
-      ];
+  List<Object?> get props => [isLoading, isSubmitting, packedItemIds, error, packedSucess];
 }

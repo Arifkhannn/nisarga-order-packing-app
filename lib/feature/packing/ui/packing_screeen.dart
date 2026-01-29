@@ -1,69 +1,74 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:nisarga_order_packing/core/theme/app_Color.dart';
-import 'package:nisarga_order_packing/core/theme/app_Text_Style.dart';
-import 'package:nisarga_order_packing/feature/orders/data/models/order_model.dart';
-import 'package:nisarga_order_packing/feature/packing/data/services/order_packed_api.dart';
+import 'package:nisarga_order_packing/core/helper/whatsapp_message_formatter.dart';
+import 'package:nisarga_order_packing/core/helper/whatsapp_status_sender.dart';
 import 'package:nisarga_order_packing/feature/packing/ui/widgets/marked_packed_button.dart';
 import 'package:nisarga_order_packing/feature/packing/ui/widgets/order_header.dart';
 import 'package:nisarga_order_packing/feature/packing/ui/widgets/packing_item_titel_card.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 
+import '../../../core/theme/app_Color.dart';
+import '../../../core/theme/app_Text_Style.dart';
+import '../../orders/logic/orders_cubit.dart';
 import '../logic/packing_cubit.dart';
 import '../logic/packing_state.dart';
 
-class PackingOrderScreen extends StatelessWidget {
-  final int orderId;
-  final String customerName;
-  final String address;
-  final double amount;
-  final String paymentMode;
-  final List<OrderItem> items;
+import '../../orders/data/models/order_model.dart';
 
-  const PackingOrderScreen({
-    super.key,
-    required this.orderId,
-    required this.customerName,
-    required this.address,
-    required this.amount,
-    required this.paymentMode,
-    required this.items,
-  });
+class PackingOrderScreen extends StatelessWidget {
+  final Orders order;
+
+  const PackingOrderScreen({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {
-    final OrderPackedApi api;
-    return BlocProvider(
-      create: (_) => PackingCubit(orderId: orderId, totalItems: items.length),
+    // order whats app formater function here ----
+    final String details = buildPackedOrderMessage(order);
+    return BlocListener<PackingCubit, PackingState>(
+      listenWhen: (prev, curr) =>
+          prev.packedSucess != curr.packedSucess && curr.packedSucess,
+      listener: (context, state) async {
+        // 1️⃣ Show success alert
+        await QuickAlert.show(
+          context: context,
+          type: QuickAlertType.success,
+          title: 'Packed Successfully',
+          text: 'Order has been marked as packed.',
+          showConfirmBtn: false,
+
+          autoCloseDuration: Duration(seconds: 2),
+        );
+
+        // 2️⃣ Reload pending orders
+        context.read<OrdersCubit>().loadHomeOrders();
+
+        // 3️⃣ Navigate back AFTER alert closes
+        Navigator.pop(context);
+      },
       child: Scaffold(
         backgroundColor: AppColors.background,
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: AppColors.background,
-          leading: const BackButton(color: Colors.black),
+          backgroundColor: AppColors.surface,
           title: Text('Packing Order', style: AppTextStyles.heading(context)),
         ),
         body: Column(
           children: [
-            BlocBuilder<PackingCubit, PackingState>(
-              builder: (context, state) {
-                final cubit = context.read<PackingCubit>();
-
-                return OrderHeader(
-                  customerName: customerName,
-                  address: address,
-                  amount: amount,
-                  paymentMode: paymentMode,
-                  isMarkPackedEnabled: cubit.isAllPacked && !state.isSubmitting,
-                  onMarkPacked: cubit.markOrderPacked,
-                );
+            OrderHeader(
+              customerName: order.customer.name,
+              address: order.customer.address,
+              amount: order.totalAmount,
+              paymentMode: order.paymentStatus,
+              sendWhatsapp: () {
+                openWhatsApp(order.customer.phone, details);
               },
             ),
             Expanded(
               child: ListView.builder(
-                itemCount: items.length,
+                itemCount: order.items.length,
                 itemBuilder: (context, index) {
-                  final item = items[index];
-                  return PackingItemTile(item: item);
+                  return PackingItemTile(item: order.items[index]);
                 },
               ),
             ),

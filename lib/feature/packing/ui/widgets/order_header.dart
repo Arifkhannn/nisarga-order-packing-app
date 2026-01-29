@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:nisarga_order_packing/core/theme/app_Color.dart';
 import 'package:nisarga_order_packing/core/theme/app_Text_Style.dart';
 
@@ -10,6 +11,7 @@ class OrderHeader extends StatelessWidget {
   final String paymentMode;
   final VoidCallback? onMarkPacked;
   final bool isMarkPackedEnabled;
+  final  VoidCallback? sendWhatsapp;
 
   const OrderHeader({
     super.key,
@@ -19,6 +21,7 @@ class OrderHeader extends StatelessWidget {
     required this.paymentMode,
     this.onMarkPacked,
     this.isMarkPackedEnabled = false,
+    this.sendWhatsapp
   });
 
   @override
@@ -84,26 +87,27 @@ class OrderHeader extends StatelessWidget {
                 const SizedBox(height: 10),
                 SizedBox(
                   height: 36,
-                  child: ElevatedButton(
-                    onPressed:
-                        isMarkPackedEnabled ? onMarkPacked : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: isMarkPackedEnabled
-                          ? AppColors.warning
-                          : Colors.grey.shade300,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                    ),
-                    child: const Text(
-                      'Mark Packed',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
-                      ),
-                    ),
-                  ),
+                  // child: ElevatedButton(
+                  //   onPressed:
+                  //       isMarkPackedEnabled ? onMarkPacked : null,
+                  //   style: ElevatedButton.styleFrom(
+                  //     backgroundColor: isMarkPackedEnabled
+                  //         ? AppColors.warning
+                  //         : Colors.grey.shade300,
+                  //     elevation: 0,
+                  //     shape: RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.circular(22),
+                  //     ),
+                  //   ),
+                  //   child: const Text(
+                  //     'Mark Packed',
+                  //     style: TextStyle(
+                  //       fontWeight: FontWeight.w600,
+                  //       color: Colors.black,
+                  //     ),
+                  //   ),
+                  // ),
+                  child: IconButton(onPressed: sendWhatsapp, icon: FaIcon(FontAwesomeIcons.whatsapp,color: Colors.green,)),
                 ),
               ],
             ),

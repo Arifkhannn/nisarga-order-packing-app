@@ -46,7 +46,7 @@ class PackingCubit extends Cubit<PackingState> {
       await apiServices.markOrderPacked(orderId);
       print('API CALL SUCCESS');
 
-      emit(state.copyWith(isSubmitting: false));
+      emit(state.copyWith(isSubmitting: false,packedSucess: true));
     } catch (e) {
       print('API ERROR: $e');
       emit(
